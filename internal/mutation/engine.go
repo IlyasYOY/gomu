@@ -28,6 +28,11 @@ type Mutant struct {
 	Description string `json:"description"`
 	Context     string `json:"context,omitempty"`  // Source code context around the mutation
 	Function    string `json:"function,omitempty"` // Function name containing the mutation
+
+	// SelectionStartLine and SelectionEndLine bound the generating AST node
+	// in physical source coordinates. Application positions above are unchanged.
+	SelectionStartLine int `json:"-"`
+	SelectionEndLine   int `json:"-"`
 }
 
 // Result represents the result of testing a mutant.
@@ -133,6 +138,8 @@ func (e *Engine) GenerateMutants(filePath string) ([]Mutant, error) {
 				for i := range mutants {
 					mutants[i].FilePath = filePath
 					mutants[i].ID = fmt.Sprintf("%s_%d", filePath, len(allMutants)+i)
+					mutants[i].SelectionStartLine = e.analyzer.GetFileSet().PositionFor(node.Pos(), false).Line
+					mutants[i].SelectionEndLine = e.analyzer.GetFileSet().PositionFor(node.End()-1, false).Line
 
 					// Only add mutant if it passes type check
 					if typeChecker.IsValidMutation(node, mutants[i]) {

@@ -67,6 +67,7 @@ check that precedes it):
 	cmd.Flags().Int("workers", 4, "number of parallel workers")
 	cmd.Flags().Int("timeout", 30, "test timeout in seconds")
 	cmd.Flags().Bool("incremental", true, "enable incremental analysis")
+	cmd.Flags().Bool("changed-lines", false, "restrict mutations to committed changed lines (requires incremental analysis)")
 	cmd.Flags().String("base-branch", "main", "base branch for incremental analysis")
 	cmd.Flags().Bool("include-generated", false, "include files marked with the standard Go generated-code comment as mutation targets")
 
@@ -145,6 +146,7 @@ func runMutationTesting(cmd *cobra.Command, args []string) error {
 	timeout, _ := cmd.Flags().GetInt("timeout")
 	output, _ := cmd.Flags().GetString("output")
 	incremental, _ := cmd.Flags().GetBool("incremental")
+	changedLines, _ := cmd.Flags().GetBool("changed-lines")
 	baseBranch, _ := cmd.Flags().GetString("base-branch")
 	threshold, _ := cmd.Flags().GetFloat64("threshold")
 	failOnGate, _ := cmd.Flags().GetBool("fail-on-gate")
@@ -174,6 +176,7 @@ func runMutationTesting(cmd *cobra.Command, args []string) error {
 		Timeout:          timeout,
 		Output:           output,
 		Incremental:      incremental,
+		ChangedLines:     changedLines,
 		BaseBranch:       baseBranch,
 		Threshold:        threshold,
 		FailOnGate:       failOnGate,
@@ -199,7 +202,7 @@ func runMutationTesting(cmd *cobra.Command, args []string) error {
 // warnIgnoredFlags warns on stderr about flags the user explicitly set that
 // --list ignores, since --list exits before those flags take effect.
 func warnIgnoredFlags(cmd *cobra.Command) {
-	ignorable := []string{"dry-run", "ci-mode", "threshold", "output", "fail-on-gate", "workers", "timeout", "incremental", "base-branch", "include-generated"}
+	ignorable := []string{"dry-run", "ci-mode", "threshold", "output", "fail-on-gate", "workers", "timeout", "incremental", "changed-lines", "base-branch", "include-generated"}
 
 	var ignored []string
 
