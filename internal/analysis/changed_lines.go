@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -30,7 +31,18 @@ func (g *GitIntegration) GetChangedLines(baseBranch string) (map[string][]LineRa
 		baseBranch = defaultBaseBranch
 	}
 
-	rootOutput, err := changedLinesGit(g.workDir, "rev-parse", "--show-toplevel")
+	gitDir := g.workDir
+
+	info, err := os.Stat(gitDir)
+	if err != nil {
+		return nil, fmt.Errorf("resolve changed-lines target: %w", err)
+	}
+
+	if !info.IsDir() {
+		gitDir = filepath.Dir(gitDir)
+	}
+
+	rootOutput, err := changedLinesGit(gitDir, "rev-parse", "--show-toplevel")
 	if err != nil {
 		return nil, fmt.Errorf("changed-lines requires a Git repository and git on PATH: %w", err)
 	}
